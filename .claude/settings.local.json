@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm *)",
+      "Bash(npm run build:*)",
+      "Bash(npm view:*)",
+      "Bash(npm run tsc:*)",
+      "Bash(npx esbuild:*)",
+      "Bash(npm run build:main:*)",
+      "Bash(npm ls:*)",
+      "Bash(node -e:*)",
+      "Bash(npm uninstall:*)"
+    ]
+  }
+}
