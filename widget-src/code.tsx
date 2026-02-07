@@ -62,7 +62,7 @@ function greet(name) {
 
 ## Image
 
-![Image alt text]()
+![Image alt text](https://github.com/lugen4ro/figma-widget-markdown-renderer/raw/0f0a248206d5ab9e737cf40086f1b7683c17a030/_assets/demo-image.png)
 `;
 
 const WIDTH_OPTIONS = [
