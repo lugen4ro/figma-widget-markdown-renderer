@@ -24,7 +24,7 @@ npm run dev
 
 ### Supported
 
-- [x] Headings (h1–h6), scaled proportionally
+- [x] Headings (h1–h6), with distinct h1–h3 hierarchy
 - [x] Paragraphs
 - [x] **Bold** / _Italic_ / ~~Strikethrough~~
 - [x] Bold+italic combined (`***text***`)
@@ -32,7 +32,7 @@ npm run dev
 - [x] Fenced code blocks (dark theme)
 - [x] Unordered lists (with nesting)
 - [x] Ordered lists (with nesting)
-- [x] Task lists (checkboxes, with checked styling)
+- [x] Interactive task lists (clickable checkboxes update the Markdown source)
 - [x] Blockquotes (with nested blockquotes)
 - [x] Inline formatting inside blockquotes
 - [x] Horizontal rules

@@ -2,6 +2,7 @@ import {
   Token,
   ListItem,
   FlatSpan,
+  TaskToggleHandler,
   DEFAULT_STYLE,
   CHECK_COLOR,
   UNCHECK_COLOR,
@@ -13,13 +14,14 @@ import {
 } from "./inline";
 
 const { widget } = figma;
-const { AutoLayout, Text } = widget;
+const { AutoLayout, SVG, Text } = widget;
 
 export function renderList(
   token: Token,
   key: number,
   baseSize: number,
-  depth: number
+  depth: number,
+  onToggleTask?: TaskToggleHandler
 ): FigmaDeclarativeNode {
   const items = token.items || [];
   const ordered = token.ordered || false;
@@ -34,7 +36,15 @@ export function renderList(
       padding={{ left: depth > 0 ? Math.round(baseSize * 1.25) : 0 }}
     >
       {items.map((item, i) =>
-        renderListItem(item, i, baseSize, ordered, start + i, depth)
+        renderListItem(
+          item,
+          i,
+          baseSize,
+          ordered,
+          start + i,
+          depth,
+          onToggleTask
+        )
       )}
     </AutoLayout>
   );
@@ -46,21 +56,18 @@ function renderListItem(
   baseSize: number,
   ordered: boolean,
   index: number,
-  depth: number
+  depth: number,
+  onToggleTask?: TaskToggleHandler
 ): FigmaDeclarativeNode {
   const isTask = item.task;
   const checked = item.checked === true;
 
-  let bullet: string;
   let bulletWidth: number;
   if (isTask) {
-    bullet = checked ? "\u2611" : "\u2610";
-    bulletWidth = Math.round(baseSize * 1.25);
+    bulletWidth = Math.round(baseSize * 1.5);
   } else if (ordered) {
-    bullet = index + ".";
     bulletWidth = Math.round(baseSize * 1.5);
   } else {
-    bullet = "\u2022";
     bulletWidth = Math.round(baseSize * 1);
   }
 
@@ -121,24 +128,53 @@ function renderListItem(
     inlineContent = <Text {...textProps}>{textContent}</Text>;
   }
 
-  const bulletColor = isTask
-    ? checked
-      ? CHECK_COLOR
-      : UNCHECK_COLOR
-    : undefined;
-  const bulletProps: Record<string, any> = {
-    fontSize: baseSize,
-    width: bulletWidth,
-  };
-  if (bulletColor) bulletProps.fill = bulletColor;
+  const bullet = ordered ? index + "." : "\u2022";
+  const checkboxSize = Math.max(14, Math.round(baseSize));
+  const bulletNode = isTask ? (
+    <AutoLayout
+      width={bulletWidth}
+      height={Math.round(baseSize * 1.5)}
+      verticalAlignItems="center"
+      hoverStyle={{ opacity: 0.75 }}
+      tooltip={checked ? "Mark as incomplete" : "Mark as complete"}
+      onClick={() => {
+        if (item.taskIndex !== undefined) onToggleTask?.(item.taskIndex);
+      }}
+    >
+      <AutoLayout
+        width={checkboxSize}
+        height={checkboxSize}
+        horizontalAlignItems="center"
+        verticalAlignItems="center"
+        fill={checked ? CHECK_COLOR : "#FFFFFF"}
+        stroke={checked ? CHECK_COLOR : UNCHECK_COLOR}
+        strokeWidth={1.5}
+        cornerRadius={3}
+      >
+        {checked && (
+          <SVG
+            width={Math.round(checkboxSize * 0.7)}
+            height={Math.round(checkboxSize * 0.7)}
+            src={`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 12"><path d="M2.2 6.2 4.8 8.6 9.8 3.5" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>`}
+          />
+        )}
+      </AutoLayout>
+    </AutoLayout>
+  ) : (
+    <Text fontSize={baseSize} width={bulletWidth}>
+      {bullet}
+    </Text>
+  );
 
   return (
     <AutoLayout key={key} direction="vertical" width="fill-parent" spacing={4}>
       <AutoLayout direction="horizontal" width="fill-parent" spacing={0}>
-        <Text {...bulletProps}>{bullet}</Text>
+        {bulletNode}
         {inlineContent}
       </AutoLayout>
-      {blockTokens.map((t, i) => renderList(t, i, baseSize, depth + 1))}
+      {blockTokens.map((t, i) =>
+        renderList(t, i, baseSize, depth + 1, onToggleTask)
+      )}
     </AutoLayout>
   );
 }

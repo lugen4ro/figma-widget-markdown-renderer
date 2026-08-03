@@ -81,6 +81,46 @@ const TEXT_SIZE_OPTIONS = [
     { option: "24", label: "Aa: 24" },
 ];
 
+/** Toggles one task marker while leaving the rest of the Markdown unchanged. */
+function toggleTaskMarker(markdown: string, targetIndex: number): string {
+    const taskPattern =
+        /^([ \t]*(?:>[ \t]*)*(?:[-+*]|\d+[.)])[ \t]+\[)([ xX])(\])(?=[ \t\r\n]|$)/;
+    const fencePattern = /^[ \t]*(?:>[ \t]*)*(`{3,}|~{3,})/;
+    let taskIndex = 0;
+    let activeFence: { character: string; length: number } | undefined;
+    const lines = markdown.match(/[^\n]*(?:\n|$)/g) || [];
+
+    return lines
+        .map((line) => {
+            const fence = line.match(fencePattern)?.[1];
+            if (fence) {
+                if (!activeFence) {
+                    activeFence = {
+                        character: fence[0],
+                        length: fence.length,
+                    };
+                } else if (
+                    fence[0] === activeFence.character &&
+                    fence.length >= activeFence.length
+                ) {
+                    activeFence = undefined;
+                }
+                return line;
+            }
+
+            if (activeFence) return line;
+
+            return line.replace(
+                taskPattern,
+                (match, prefix: string, marker: string, suffix: string) => {
+                    if (taskIndex++ !== targetIndex) return match;
+                    return `${prefix}${marker === " " ? "x" : " "}${suffix}`;
+                },
+            );
+        })
+        .join("");
+}
+
 function Widget() {
     const [markdown, setMarkdown] = useSyncedState(
         "markdown",
@@ -142,7 +182,11 @@ function Widget() {
             stroke="#E5E5E5"
             strokeWidth={1}
         >
-            {renderTokens(tokens, baseSize, contentWidth)}
+            {renderTokens(tokens, baseSize, contentWidth, (taskIndex) =>
+                setMarkdown((current) =>
+                    toggleTaskMarker(current, taskIndex),
+                )
+            )}
         </AutoLayout>
     );
 

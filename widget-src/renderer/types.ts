@@ -36,7 +36,10 @@ export type ListItem = {
   task: boolean;
   checked?: boolean;
   loose: boolean;
+  taskIndex?: number;
 };
+
+export type TaskToggleHandler = (taskIndex: number) => void;
 
 export type InlineStyle = {
   bold: boolean;
